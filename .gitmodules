@@ -1,0 +1,4 @@
+[submodule "dawn"]
+	path = dawn
+	url = https://dawn.googlesource.com/dawn
+	branch = chromium/5845
