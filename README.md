@@ -14,8 +14,9 @@ On the web, the app is built against [Emscripten](https://emscripten.org/), whic
 
 ```sh
 # Clone repository and initialize submodules.
-git clone --recurse-submodules https://github.com/beaufortfrancois/webgpu-cross-platform-app.git
+git clone https://github.com/beaufortfrancois/webgpu-cross-platform-app.git
 cd webgpu-cross-platform-app/
+git submodule update --init
 ```
 
 ## Requirements
