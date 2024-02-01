@@ -71,12 +71,11 @@ void CreateRenderPipeline() {
       .format = wgpu::TextureFormat::BGRA8Unorm};
 
   wgpu::FragmentState fragmentState{.module = shaderModule,
-                                    .entryPoint = "fragmentMain",
                                     .targetCount = 1,
                                     .targets = &colorTargetState};
 
   wgpu::RenderPipelineDescriptor descriptor{
-      .vertex = {.module = shaderModule, .entryPoint = "vertexMain"},
+      .vertex = {.module = shaderModule},
       .fragment = &fragmentState};
   pipeline = device.CreateRenderPipeline(&descriptor);
 }
