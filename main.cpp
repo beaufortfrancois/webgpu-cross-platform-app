@@ -1,5 +1,6 @@
 #include <GLFW/glfw3.h>
 #include <webgpu/webgpu_cpp.h>
+#include <iostream>
 #if defined(__EMSCRIPTEN__)
 #include <emscripten/emscripten.h>
 #else
@@ -40,6 +41,11 @@ void GetDevice(void (*callback)(wgpu::Device)) {
             [](WGPURequestDeviceStatus status, WGPUDevice cDevice,
                const char* message, void* userdata) {
               wgpu::Device device = wgpu::Device::Acquire(cDevice);
+              device.SetUncapturedErrorCallback(
+                  [](WGPUErrorType type, const char* message, void* userdata) {
+                    std::cout << "Error: " << type << " - message: " << message;
+                  },
+                  nullptr);
               reinterpret_cast<void (*)(wgpu::Device)>(userdata)(device);
             },
             userdata);
@@ -132,6 +138,7 @@ void Start() {
     glfwPollEvents();
     Render();
     swapChain.Present();
+    instance.ProcessEvents();
   }
 #endif
 }
