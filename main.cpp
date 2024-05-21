@@ -13,19 +13,21 @@ wgpu::Device device;
 wgpu::RenderPipeline pipeline;
 
 wgpu::Surface surface;
+wgpu::TextureFormat format;
 const uint32_t kWidth = 512;
 const uint32_t kHeight = 512;
 
 void ConfigureSurface() {
   wgpu::SurfaceCapabilities capabilities;
   surface.GetCapabilities(adapter, &capabilities);
+  format = capabilities.formats[0];
 
   wgpu::SurfaceConfiguration config{
       .device = device,
+      .format = format,
+      .alphaMode = capabilities.alphaModes[0],
       .width = kWidth,
       .height = kHeight,
-      .format = capabilities.formats[0],
-      .alphaMode = capabilities.alphaModes[0],
       .presentMode = capabilities.presentModes[0]};
   surface.Configure(&config);
 }
@@ -37,6 +39,9 @@ void GetAdapter(void (*callback)(wgpu::Adapter)) {
       // wgpu::RequestAdapterStatus and wgpu::Adapter.
       [](WGPURequestAdapterStatus status, WGPUAdapter cAdapter,
          const char* message, void* userdata) {
+        if (message) {
+          printf("RequestAdapter: %s\n", message);
+        }
         if (status != WGPURequestAdapterStatus_Success) {
           exit(0);
         }
@@ -52,6 +57,9 @@ void GetDevice(void (*callback)(wgpu::Device)) {
       // wgpu::RequestDeviceStatus and wgpu::Device.
       [](WGPURequestDeviceStatus status, WGPUDevice cDevice,
           const char* message, void* userdata) {
+        if (message) {
+          printf("RequestDevice: %s\n", message);
+        }
         wgpu::Device device = wgpu::Device::Acquire(cDevice);
         device.SetUncapturedErrorCallback(
             [](WGPUErrorType type, const char* message, void* userdata) {
@@ -82,8 +90,7 @@ void CreateRenderPipeline() {
   wgpu::ShaderModule shaderModule =
       device.CreateShaderModule(&shaderModuleDescriptor);
 
-  wgpu::ColorTargetState colorTargetState{
-      .format = wgpu::TextureFormat::BGRA8Unorm};
+  wgpu::ColorTargetState colorTargetState{.format = format};
 
   wgpu::FragmentState fragmentState{.module = shaderModule,
                                     .targetCount = 1,
