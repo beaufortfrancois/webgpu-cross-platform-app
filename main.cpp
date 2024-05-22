@@ -25,10 +25,8 @@ void ConfigureSurface() {
   wgpu::SurfaceConfiguration config{
       .device = device,
       .format = format,
-      .alphaMode = wgpu::CompositeAlphaMode::Auto,
       .width = kWidth,
-      .height = kHeight,
-      .presentMode = wgpu::PresentMode::Fifo};
+      .height = kHeight};
   surface.Configure(&config);
 }
 
