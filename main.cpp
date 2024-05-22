@@ -25,10 +25,10 @@ void ConfigureSurface() {
   wgpu::SurfaceConfiguration config{
       .device = device,
       .format = format,
-      .alphaMode = capabilities.alphaModes[0],
+      .alphaMode = wgpu::CompositeAlphaMode::Auto,
       .width = kWidth,
       .height = kHeight,
-      .presentMode = capabilities.presentModes[0]};
+      .presentMode = wgpu::PresentMode::Fifo};
   surface.Configure(&config);
 }
 
