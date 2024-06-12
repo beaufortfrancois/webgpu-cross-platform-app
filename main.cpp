@@ -32,40 +32,36 @@ void ConfigureSurface() {
 
 void GetAdapter(void (*callback)(wgpu::Adapter)) {
   instance.RequestAdapter(
-      nullptr,
-      // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=1892): Use
-      // wgpu::RequestAdapterStatus and wgpu::Adapter.
-      [](WGPURequestAdapterStatus status, WGPUAdapter cAdapter,
-         const char* message, void* userdata) {
+      nullptr, wgpu::CallbackMode::AllowSpontaneous,
+      [callback](wgpu::RequestAdapterStatus status, wgpu::Adapter adapter,
+                 const char* message) {
         if (message) {
           printf("RequestAdapter: %s\n", message);
         }
-        if (status != WGPURequestAdapterStatus_Success) {
+        if (status != wgpu::RequestAdapterStatus::Success) {
           exit(0);
         }
-        wgpu::Adapter adapter = wgpu::Adapter::Acquire(cAdapter);
-        reinterpret_cast<void (*)(wgpu::Adapter)>(userdata)(adapter);
-  }, reinterpret_cast<void*>(callback));
+        callback(adapter);
+      });
 }
 
 void GetDevice(void (*callback)(wgpu::Device)) {
   adapter.RequestDevice(
-      nullptr,
-      // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=1892): Use
-      // wgpu::RequestDeviceStatus and wgpu::Device.
-      [](WGPURequestDeviceStatus status, WGPUDevice cDevice,
-          const char* message, void* userdata) {
+      nullptr, wgpu::CallbackMode::AllowSpontaneous,
+      [callback](wgpu::RequestDeviceStatus status, wgpu::Device device,
+                 const char* message) {
         if (message) {
           printf("RequestDevice: %s\n", message);
         }
-        wgpu::Device device = wgpu::Device::Acquire(cDevice);
+        // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=1892): Use
+        // wgpu::ErrorType.
         device.SetUncapturedErrorCallback(
             [](WGPUErrorType type, const char* message, void* userdata) {
               std::cout << "Error: " << type << " - message: " << message;
             },
             nullptr);
-        reinterpret_cast<void (*)(wgpu::Device)>(userdata)(device);
-  }, reinterpret_cast<void*>(callback));
+        callback(device);
+      });
 }
 
 const char shaderCode[] = R"(
