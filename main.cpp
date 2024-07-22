@@ -27,6 +27,10 @@ void ConfigureSurface() {
       .format = format,
       .width = kWidth,
       .height = kHeight};
+  // See TODO(dawn:2320) in dawn/native/vulkan/PhysicalDeviceVk.cpp
+#if defined(__linux__) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+    config.presentMode = wgpu::PresentMode::Mailbox;
+#endif
   surface.Configure(&config);
 }
 
