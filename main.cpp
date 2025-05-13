@@ -129,9 +129,9 @@ void InitGraphics() {
 
 void Start() {
 #if defined(__EMSCRIPTEN__)
-  wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector canvasDesc{};
-  canvasDesc.selector = "#canvas";
-  wgpu::SurfaceDescriptor surfaceDesc{.nextInChain = &canvasDesc};
+  wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector source{};
+  source.selector = "#canvas";
+  wgpu::SurfaceDescriptor surfaceDesc{.nextInChain = &source};
   surface = instance.CreateSurface(&surfaceDesc);
 #else
   if (!glfwInit()) {
