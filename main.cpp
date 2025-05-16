@@ -24,18 +24,17 @@ void ConfigureSurface() {
   surface.GetCapabilities(adapter, &capabilities);
   format = capabilities.formats[0];
 
-  wgpu::SurfaceConfiguration config{
-      .device = device,
-      .format = format,
-      .width = kWidth,
-      .height = kHeight,
-      .presentMode = wgpu::PresentMode::Fifo};
+  wgpu::SurfaceConfiguration config{.device = device,
+                                    .format = format,
+                                    .width = kWidth,
+                                    .height = kHeight,
+                                    .presentMode = wgpu::PresentMode::Fifo};
   surface.Configure(&config);
 }
 
 void Init() {
-  wgpu::InstanceDescriptor instanceDesc{};
-  instanceDesc.capabilities.timedWaitAnyEnable = true;
+  wgpu::InstanceDescriptor instanceDesc{
+      .capabilities = {.timedWaitAnyEnable = true}};
   instance = wgpu::CreateInstance(&instanceDesc);
 
   wgpu::Future f1 = instance.RequestAdapter(
@@ -82,8 +81,7 @@ const char shaderCode[] = R"(
 )";
 
 void CreateRenderPipeline() {
-  wgpu::ShaderSourceWGSL wgsl{};
-  wgsl.code = shaderCode;
+  wgpu::ShaderSourceWGSL wgsl{{.code = shaderCode}};
 
   wgpu::ShaderModuleDescriptor shaderModuleDescriptor{.nextInChain = &wgsl};
   wgpu::ShaderModule shaderModule =
@@ -91,13 +89,11 @@ void CreateRenderPipeline() {
 
   wgpu::ColorTargetState colorTargetState{.format = format};
 
-  wgpu::FragmentState fragmentState{.module = shaderModule,
-                                    .targetCount = 1,
-                                    .targets = &colorTargetState};
+  wgpu::FragmentState fragmentState{
+      .module = shaderModule, .targetCount = 1, .targets = &colorTargetState};
 
-  wgpu::RenderPipelineDescriptor descriptor{
-      .vertex = {.module = shaderModule},
-      .fragment = &fragmentState};
+  wgpu::RenderPipelineDescriptor descriptor{.vertex = {.module = shaderModule},
+                                            .fragment = &fragmentState};
   pipeline = device.CreateRenderPipeline(&descriptor);
 }
 
@@ -129,9 +125,8 @@ void InitGraphics() {
 
 void Start() {
 #if defined(__EMSCRIPTEN__)
-  wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector source{};
-  source.selector = "#canvas";
-  wgpu::SurfaceDescriptor surfaceDesc{.nextInChain = &source};
+  wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector src{{.selector = "#canvas"}};
+  wgpu::SurfaceDescriptor surfaceDesc{.nextInChain = &src};
   surface = instance.CreateSurface(&surfaceDesc);
 #else
   if (!glfwInit()) {
