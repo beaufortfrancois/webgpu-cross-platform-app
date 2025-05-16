@@ -1,9 +1,11 @@
-#include <GLFW/glfw3.h>
+#include <dawn/webgpu_cpp_print.h>
 #include <webgpu/webgpu_cpp.h>
+
 #include <iostream>
 #if defined(__EMSCRIPTEN__)
 #include <emscripten/emscripten.h>
 #else
+#include <GLFW/glfw3.h>
 #include <webgpu/webgpu_glfw.h>
 #endif
 
@@ -26,46 +28,46 @@ void ConfigureSurface() {
       .device = device,
       .format = format,
       .width = kWidth,
-      .height = kHeight};
+      .height = kHeight,
+      .presentMode = wgpu::PresentMode::Fifo};
   surface.Configure(&config);
 }
 
-void GetAdapter(void (*callback)(wgpu::Adapter)) {
-  instance.RequestAdapter(
-      nullptr,
-      // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=1892): Use
-      // wgpu::RequestAdapterStatus and wgpu::Adapter.
-      [](WGPURequestAdapterStatus status, WGPUAdapter cAdapter,
-         const char* message, void* userdata) {
-        if (message) {
-          printf("RequestAdapter: %s\n", message);
-        }
-        if (status != WGPURequestAdapterStatus_Success) {
+void Init() {
+  wgpu::InstanceDescriptor instanceDesc{};
+  instanceDesc.capabilities.timedWaitAnyEnable = true;
+  instance = wgpu::CreateInstance(&instanceDesc);
+
+  wgpu::Future f1 = instance.RequestAdapter(
+      nullptr, wgpu::CallbackMode::WaitAnyOnly,
+      [](wgpu::RequestAdapterStatus status, wgpu::Adapter a,
+         wgpu::StringView message) {
+        if (status != wgpu::RequestAdapterStatus::Success) {
+          std::cout << "RequestAdapter: " << message << "\n";
           exit(0);
         }
-        wgpu::Adapter adapter = wgpu::Adapter::Acquire(cAdapter);
-        reinterpret_cast<void (*)(wgpu::Adapter)>(userdata)(adapter);
-  }, reinterpret_cast<void*>(callback));
-}
+        adapter = std::move(a);
+      });
+  instance.WaitAny(f1, UINT64_MAX);
 
-void GetDevice(void (*callback)(wgpu::Device)) {
-  adapter.RequestDevice(
-      nullptr,
-      // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=1892): Use
-      // wgpu::RequestDeviceStatus and wgpu::Device.
-      [](WGPURequestDeviceStatus status, WGPUDevice cDevice,
-          const char* message, void* userdata) {
-        if (message) {
-          printf("RequestDevice: %s\n", message);
+  wgpu::DeviceDescriptor desc{};
+  desc.SetUncapturedErrorCallback([](const wgpu::Device&,
+                                     wgpu::ErrorType errorType,
+                                     wgpu::StringView message) {
+    std::cout << "Error: " << errorType << " - message: " << message << "\n";
+  });
+
+  wgpu::Future f2 = adapter.RequestDevice(
+      &desc, wgpu::CallbackMode::WaitAnyOnly,
+      [](wgpu::RequestDeviceStatus status, wgpu::Device d,
+         wgpu::StringView message) {
+        if (status != wgpu::RequestDeviceStatus::Success) {
+          std::cout << "RequestDevice: " << message << "\n";
+          exit(0);
         }
-        wgpu::Device device = wgpu::Device::Acquire(cDevice);
-        device.SetUncapturedErrorCallback(
-            [](WGPUErrorType type, const char* message, void* userdata) {
-              std::cout << "Error: " << type << " - message: " << message;
-            },
-            nullptr);
-        reinterpret_cast<void (*)(wgpu::Device)>(userdata)(device);
-  }, reinterpret_cast<void*>(callback));
+        device = std::move(d);
+      });
+  instance.WaitAny(f2, UINT64_MAX);
 }
 
 const char shaderCode[] = R"(
@@ -80,11 +82,10 @@ const char shaderCode[] = R"(
 )";
 
 void CreateRenderPipeline() {
-  wgpu::ShaderModuleWGSLDescriptor wgslDesc{};
-  wgslDesc.code = shaderCode;
+  wgpu::ShaderSourceWGSL wgsl{};
+  wgsl.code = shaderCode;
 
-  wgpu::ShaderModuleDescriptor shaderModuleDescriptor{
-      .nextInChain = &wgslDesc};
+  wgpu::ShaderModuleDescriptor shaderModuleDescriptor{.nextInChain = &wgsl};
   wgpu::ShaderModule shaderModule =
       device.CreateShaderModule(&shaderModuleDescriptor);
 
@@ -127,6 +128,12 @@ void InitGraphics() {
 }
 
 void Start() {
+#if defined(__EMSCRIPTEN__)
+  wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector source{};
+  source.selector = "#canvas";
+  wgpu::SurfaceDescriptor surfaceDesc{.nextInChain = &source};
+  surface = instance.CreateSurface(&surfaceDesc);
+#else
   if (!glfwInit()) {
     return;
   }
@@ -134,14 +141,6 @@ void Start() {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   GLFWwindow* window =
       glfwCreateWindow(kWidth, kHeight, "WebGPU window", nullptr, nullptr);
-
-#if defined(__EMSCRIPTEN__)
-  wgpu::SurfaceDescriptorFromCanvasHTMLSelector canvasDesc{};
-  canvasDesc.selector = "#canvas";
-
-  wgpu::SurfaceDescriptor surfaceDesc{.nextInChain = &canvasDesc};
-  surface = instance.CreateSurface(&surfaceDesc);
-#else
   surface = wgpu::glfw::CreateSurfaceForWindow(instance, window);
 #endif
 
@@ -160,12 +159,6 @@ void Start() {
 }
 
 int main() {
-  instance = wgpu::CreateInstance();
-  GetAdapter([](wgpu::Adapter a) {
-    adapter = a;
-    GetDevice([](wgpu::Device d) {
-      device = d;
-      Start();
-    });
-  });
+  Init();
+  Start();
 }
