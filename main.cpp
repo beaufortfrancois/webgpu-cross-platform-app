@@ -1,13 +1,12 @@
-#include <dawn/webgpu_cpp_print.h>
-#include <webgpu/webgpu_cpp.h>
-
 #include <iostream>
+
+#include <GLFW/glfw3.h>
 #if defined(__EMSCRIPTEN__)
 #include <emscripten/emscripten.h>
-#else
-#include <GLFW/glfw3.h>
-#include <webgpu/webgpu_glfw.h>
 #endif
+#include <dawn/webgpu_cpp_print.h>
+#include <webgpu/webgpu_cpp.h>
+#include <webgpu/webgpu_glfw.h>
 
 wgpu::Instance instance;
 wgpu::Adapter adapter;
@@ -124,11 +123,6 @@ void InitGraphics() {
 }
 
 void Start() {
-#if defined(__EMSCRIPTEN__)
-  wgpu::EmscriptenSurfaceSourceCanvasHTMLSelector src{{.selector = "#canvas"}};
-  wgpu::SurfaceDescriptor surfaceDesc{.nextInChain = &src};
-  surface = instance.CreateSurface(&surfaceDesc);
-#else
   if (!glfwInit()) {
     return;
   }
@@ -137,7 +131,6 @@ void Start() {
   GLFWwindow* window =
       glfwCreateWindow(kWidth, kHeight, "WebGPU window", nullptr, nullptr);
   surface = wgpu::glfw::CreateSurfaceForWindow(instance, window);
-#endif
 
   InitGraphics();
 
