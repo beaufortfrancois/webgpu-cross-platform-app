@@ -32,8 +32,9 @@ void ConfigureSurface() {
 }
 
 void Init() {
-  wgpu::InstanceDescriptor instanceDesc{
-      .capabilities = {.timedWaitAnyEnable = true}};
+  static const auto kTimedWaitAny = wgpu::InstanceFeatureName::TimedWaitAny;
+  wgpu::InstanceDescriptor instanceDesc{.requiredFeatureCount = 1,
+                                        .requiredFeatures = &kTimedWaitAny};
   instance = wgpu::CreateInstance(&instanceDesc);
 
   wgpu::Future f1 = instance.RequestAdapter(
