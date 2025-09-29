@@ -4,7 +4,7 @@
 
 This app is a <em>minimalistic</em> C++ example that shows how to use [WebGPU](https://gpuweb.github.io/gpuweb/) to build desktop and web apps from a single codebase. Under the hood, it uses WebGPU's [webgpu.h](https://github.com/webgpu-native/webgpu-headers/blob/main/webgpu.h) as a stable and platform-agnostic hardware abstraction layer through a C++ wrapper called [webgpu_cpp.h](https://source.chromium.org/chromium/chromium/src/+/main:third_party/dawn/include/webgpu/webgpu_cpp.h). Note that this wrapper is subject to change.
 
-On the web, the app is built against [emdawnwebgpu](https://dawn.googlesource.com/dawn/+/refs/heads/main/src/emdawnwebgpu/) (Emscripten Dawn WebGPU), which has bindings implementing webgpu.h on top of the JavaScript API. It uses [Emscripten](https://emscripten.org/), a tool for compiling C/C++ programs to WebAssembly. On specific platforms such as macOS or Windows, this project can be built against [Dawn](https://dawn.googlesource.com/dawn/), Chromium's cross-platform WebGPU implementation.
+On the web, the app is built against [Emdawnwebgpu](https://dawn.googlesource.com/dawn/+/refs/heads/main/src/emdawnwebgpu/) (Emscripten Dawn WebGPU), which has bindings implementing webgpu.h on top of the JavaScript API. It uses [Emscripten](https://emscripten.org/), a tool for compiling C/C++ programs to WebAssembly. On specific platforms such as macOS or Windows, this project can be built against [Dawn](https://dawn.googlesource.com/dawn/), Chromium's cross-platform WebGPU implementation. While webgpu.h is considered stable, this stability doesn't extend to Emdawnwebgpu or Dawn.
 
 ## Setup
 
