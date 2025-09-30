@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 20)           # Enable C++20 standard
 add_executable(app "main.cpp")
 
 set(DAWN_FETCH_DEPENDENCIES ON)
-set(DAWN_BUILD_MONOLITHIC_LIBRARY STATIC)
 add_subdirectory("dawn" EXCLUDE_FROM_ALL)
 
 if(EMSCRIPTEN)
