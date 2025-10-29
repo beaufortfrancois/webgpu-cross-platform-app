@@ -4,8 +4,16 @@ set(CMAKE_CXX_STANDARD 20)           # Enable C++20 standard
 
 add_executable(app "main.cpp")
 
+include(FetchContent)
+FetchContent_Declare(
+  dawn
+  GIT_REPOSITORY https://dawn.googlesource.com/dawn
+  GIT_TAG chromium/7444 # Chrome 142
+  GIT_SHALLOW TRUE
+  GIT_SUBMODULES ""
+)
 set(DAWN_FETCH_DEPENDENCIES ON)
-add_subdirectory("dawn" EXCLUDE_FROM_ALL)
+FetchContent_MakeAvailable(dawn)
 
 if(EMSCRIPTEN)
   set_target_properties(app PROPERTIES SUFFIX ".html")

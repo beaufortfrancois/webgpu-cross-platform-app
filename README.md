@@ -9,10 +9,9 @@ On the web, the app is built against [Emdawnwebgpu](https://dawn.googlesource.co
 ## Setup
 
 ```sh
-# Clone repository and initialize submodules.
+# Clone repository.
 git clone https://github.com/beaufortfrancois/webgpu-cross-platform-app.git
 cd webgpu-cross-platform-app/
-git submodule update --init
 ```
 
 ## Requirements
